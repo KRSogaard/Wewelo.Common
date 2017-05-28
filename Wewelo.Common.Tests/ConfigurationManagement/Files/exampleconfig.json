@@ -1,0 +1,24 @@
+{
+  "Name": "Kasper",
+  "Tasks": {
+    "SQSQueueUrl": "http://www.wewelo.com",
+    "Threads": 12
+  },
+  "This": {
+    "Is": {
+      "A": {
+        "Boolean": false, 
+        "Super": {
+          "Deep": "Value"
+        }
+      }
+    }
+  },
+  "UseBlah": true,
+  "SIM": {
+    "folder": {
+      "structure": "73f5ddef-8296-48fe-acd6-576b7971298d",
+      "validations": "73f5ddef-8296-48fe-acd6-576b7971298d"
+    }
+  }
+}
