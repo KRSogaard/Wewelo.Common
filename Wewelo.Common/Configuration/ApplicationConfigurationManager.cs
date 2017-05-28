@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
 namespace Wewelo.Common.Configuration
@@ -8,47 +9,37 @@ namespace Wewelo.Common.Configuration
     //creates and handles configuration files, with data about tasks, and permissions.
     public class ApplicationConfigurationManager
     {
+        JObject configJSON;
         private Dictionary<String, JToken> map;
         
         public T Get<T>(string path)
         {
-            if (map == null)
-            {
-                throw new ConfigNotLoadedException();
-            }
-
-            string cleanKey = CleanKey(path);
-            if (!map.ContainsKey(cleanKey))
-            {
-                throw new ConfigNotFoundException(path);
-            }
-
-            try
-            {
-                return map[cleanKey].Value<T>();
-            }
-            catch (FormatException exp)
-            {
-                throw new ConfigCastException(path, typeof(T), exp);
-            }
+            return Get<T>(path, () => { throw new ConfigNotFoundException(path); });
         }
 
         public T Get<T>(string path, T defaultValue)
         {
-            if (map == null)
+            return Get<T>(path, () => defaultValue);
+        }
+
+        private T Get<T>(string path, Func<T> notFoundAction)
+        {
+            if (configJSON == null)
             {
                 throw new ConfigNotLoadedException();
             }
 
-            string cleanKey = CleanKey(path);
-            if (!map.ContainsKey(cleanKey))
-            {
-                return defaultValue;
-            }
-            
+            Object token = GetJToken(path);
+            if (token == null)
+                return notFoundAction();
+
             try
             {
-                return map[cleanKey].Value<T>();
+                if (token is JArray)
+                {
+                    throw new ConfigArrayException("");
+                }
+                return ((JToken)token).Value<T>();
             }
             catch (FormatException exp)
             {
@@ -56,62 +47,61 @@ namespace Wewelo.Common.Configuration
             }
         }
 
-        //main function to be called
-        public void CreateConfigDictionary(string filepath)
+        public IList<T> GetArray<T>(string path)
         {
-            ReadFromJsonFile(filepath);
+            return GetArray<T>(path, () => { throw new ConfigNotFoundException(path); });
         }
 
-        //read the file
-        public void ReadFromJsonFile(string filepath)
+        public IList<T> GetArray<T>(string path, IList<T> defaultValue)
         {
-            JToken o = JObject.Parse(File.ReadAllText(filepath));
-            Dictionary<String, JToken> map = new Dictionary<string, JToken>();
-            processConfig(null, map, o);
-            this.map = map;
+            return GetArray<T>(path, () => defaultValue);
         }
 
-        private void processConfig(string path, Dictionary<String, JToken> map, JToken token)
+        private IList<T> GetArray<T>(string path, Func<IList<T>> notFoundAction)
         {
-            if (!token.HasValues)
+            if (configJSON == null)
             {
-                map.Add(path, token);
-                return;
+                throw new ConfigNotLoadedException();
             }
-            
-            foreach (var t in token.Children<JObject>())
+
+            Object token = GetJToken(path);
+            if (token == null)
+                return notFoundAction();
+
+            try
             {
-                processConfig(path, map, t);
-            }
-            foreach (var t in token.Children<JProperty>())
-            {
-                String newPath = path == null ? t.Name : path + "." + t.Name;
-                processConfig(newPath, map, t);
-            }
-            foreach (var c in token.Children())
-            {
-                switch (c.Type)
+                if (!(token is JArray))
                 {
-                    case JTokenType.Integer:
-                    case JTokenType.Float:
-                    case JTokenType.String:
-                    case JTokenType.Boolean:
-                    case JTokenType.Null:
-                    case JTokenType.Undefined:
-                        map.Add(CleanKey(path), c);
-                        break;
+                    throw new ConfigNotArrayException(path);
                 }
-                Console.WriteLine(c.Type);
+                return ((JArray)token).Values<T>().ToList();
             }
-            Console.WriteLine(token);
+            catch (FormatException exp)
+            {
+                throw new ConfigCastException(path, typeof(T), exp);
+            }
         }
 
-        //return the correct configuration settings key 
-        public static string CleanKey(string input)
+        private Object GetJToken(string path)
         {
-            return input?.Trim().ToLower();
+            string[] pathSplit = path.Split('.');
+            JToken current = configJSON;
+            for (int i = 0; i < pathSplit.Length; i++)
+            {
+                current = current[pathSplit[i]];
+                if (current == null)
+                {
+                    return null;
+                }
+            }
+            return current;
+        }
+
+        //main function to be called
+        public void Load(string filepath)
+        {
+            configJSON = JObject.Parse(File.ReadAllText(filepath));
         }
     }
-    
 }
 

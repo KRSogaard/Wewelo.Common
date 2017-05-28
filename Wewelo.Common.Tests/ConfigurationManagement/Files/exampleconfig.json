@@ -7,9 +7,10 @@
   "This": {
     "Is": {
       "A": {
-        "Boolean": false, 
+        "Boolean": false,
         "Super": {
-          "Deep": "Value"
+          "Deep": "Value",
+          "StringArray": [ "String1", "String2" ]
         }
       }
     }
@@ -20,5 +21,8 @@
       "structure": "73f5ddef-8296-48fe-acd6-576b7971298d",
       "validations": "73f5ddef-8296-48fe-acd6-576b7971298d"
     }
-  }
+  },
+  "StringArray": [ "String1", "String2" ],
+  "BoolArray": [ true, false, true ],
+  "IntArray": [ 5, 4, 3, 2, 1] 
 }
