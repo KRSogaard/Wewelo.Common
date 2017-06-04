@@ -49,11 +49,16 @@ namespace Wewelo.Common
             List<string> results = new List<string>();
             foreach (Match m in mc)
             {
-                if (m.Groups.Count > 1)
-                    foreach (var c in m.Groups[1].Captures)
+                if (m.Groups.Count == 0)
+                    continue;
+
+                for (int i = 1; i < m.Groups.Count; i++)
+                {
+                    foreach (var c in m.Groups[i].Captures)
                     {
                         results.Add(c.ToString());
                     }
+                }
             }
             return results;
         }
