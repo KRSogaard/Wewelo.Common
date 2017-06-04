@@ -28,5 +28,15 @@ namespace Wewelo.Common
             }
             return true;
         }
+
+        public static bool CompareObject(object o1, object o2)
+        {
+            if (o1 == null && o2 == null)
+                return true;
+            if (o1 == null || o2 == null)
+                return false;
+
+            return o1.Equals(o2);
+        }
     }
 }
