@@ -72,7 +72,7 @@ namespace Wewelo.Common
                 string.IsNullOrWhiteSpace(source))
                 return new List<List<string>>();
 
-            Regex re = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline | RegexOptions.Singleline);
+            Regex re = new Regex(pattern);
             MatchCollection mc = re.Matches(source);
 
             List<List<string>> results = new List<List<string>>();
@@ -83,7 +83,8 @@ namespace Wewelo.Common
                 {
                     innerList.Add(m.Groups[g].Value);
                 }
-                results.Add(innerList);
+                if (innerList.Count > 0)
+                    results.Add(innerList);
             }
             return results;
         }

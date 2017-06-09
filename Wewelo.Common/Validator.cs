@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Wewelo.Common
 {
@@ -18,6 +19,16 @@ namespace Wewelo.Common
             {
                 throw new ArgumentException($"Field \"{field}\" is can not be empty.");
             }
+        }
+        public static void NonEmpty<T>(string field, IEnumerable<T> obj)
+        {
+            NonNull(field, obj);
+            foreach (var o in obj)
+            {
+                // There where an item
+                return;
+            }
+            throw new ArgumentException($"Field \"{field}\" is can not be empty.");
         }
     }
 }
